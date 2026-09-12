@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 750" width="500" height="750" role="img" aria-label="Tudo em Todo Lugar ao Mesmo Tempo">
+  <defs>
+    <linearGradient id="bg70w" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="hsl(288 55% 22%)"/>
+      <stop offset="55%" stop-color="hsl(268 45% 12%)"/>
+      <stop offset="100%" stop-color="hsl(288 30% 6%)"/>
+    </linearGradient>
+    <radialGradient id="glow70w" cx="0.72" cy="0.22" r="0.75">
+      <stop offset="0%" stop-color="hsl(176 85% 62%)" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="hsl(176 85% 62%)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="veil70w" x1="0" y1="0.35" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05060a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#05060a" stop-opacity="0.88"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="500" height="750" fill="url(#bg70w)"/>
+  <rect width="500" height="750" fill="url(#glow70w)"/>
+
+  <g opacity="0.16" fill="none" stroke="hsl(176 90% 78%)" stroke-width="1.2">
+    <circle cx="360" cy="180" r="170"/>
+    <circle cx="360" cy="180" r="110"/>
+    <circle cx="360" cy="180" r="230"/>
+  </g>
+
+  <rect width="500" height="750" fill="url(#veil70w)"/>
+
+  <text x="40" y="526" fill="hsl(176 80% 72%)"
+        font-family="ui-sans-serif, 'Segoe UI', system-ui, sans-serif"
+        font-size="15.6" font-weight="600" letter-spacing="5.5">2022</text>
+
+  <text fill="#f6f4f1" font-family="Georgia, 'Times New Roman', serif"
+        font-size="46" font-weight="700"><tspan x="40" y="588.1">Tudo em Todo</tspan><tspan x="40" y="641.0">Lugar ao Mesmo</tspan><tspan x="40" y="693.9">Tempo</tspan></text>
+</svg>

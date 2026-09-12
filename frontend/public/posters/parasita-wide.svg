@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Parasita">
+  <defs>
+    <linearGradient id="bg2ci" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="hsl(96 55% 22%)"/>
+      <stop offset="55%" stop-color="hsl(76 45% 12%)"/>
+      <stop offset="100%" stop-color="hsl(96 30% 6%)"/>
+    </linearGradient>
+    <radialGradient id="glow2ci" cx="0.72" cy="0.22" r="0.75">
+      <stop offset="0%" stop-color="hsl(66 85% 62%)" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="hsl(66 85% 62%)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="veil2ci" x1="0" y1="0.35" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05060a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#05060a" stop-opacity="0.88"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg2ci)"/>
+  <rect width="1280" height="720" fill="url(#glow2ci)"/>
+
+  <g opacity="0.16" fill="none" stroke="hsl(66 90% 78%)" stroke-width="1.2">
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="435.20000000000005"/>
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="281.6"/>
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="588.8000000000001"/>
+  </g>
+
+  <rect width="1280" height="720" fill="url(#veil2ci)"/>
+
+  <text x="72" y="539.1999999999999" fill="hsl(66 80% 72%)"
+        font-family="ui-sans-serif, 'Segoe UI', system-ui, sans-serif"
+        font-size="21.8" font-weight="600" letter-spacing="7.7">2019</text>
+
+  <text fill="#f6f4f1" font-family="Georgia, 'Times New Roman', serif"
+        font-size="64" font-weight="700"><tspan x="72" y="625.6">Parasita</tspan></text>
+</svg>

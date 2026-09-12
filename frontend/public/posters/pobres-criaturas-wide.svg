@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Pobres Criaturas">
+  <defs>
+    <linearGradient id="bg84i" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="hsl(330 55% 22%)"/>
+      <stop offset="55%" stop-color="hsl(310 45% 12%)"/>
+      <stop offset="100%" stop-color="hsl(330 30% 6%)"/>
+    </linearGradient>
+    <radialGradient id="glow84i" cx="0.72" cy="0.22" r="0.75">
+      <stop offset="0%" stop-color="hsl(300 85% 62%)" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="hsl(300 85% 62%)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="veil84i" x1="0" y1="0.35" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05060a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#05060a" stop-opacity="0.88"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg84i)"/>
+  <rect width="1280" height="720" fill="url(#glow84i)"/>
+
+  <g opacity="0.16" fill="none" stroke="hsl(300 90% 78%)" stroke-width="1.2">
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="435.20000000000005"/>
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="281.6"/>
+    <circle cx="921.5999999999999" cy="172.79999999999998" r="588.8000000000001"/>
+  </g>
+
+  <rect width="1280" height="720" fill="url(#veil84i)"/>
+
+  <text x="72" y="539.1999999999999" fill="hsl(300 80% 72%)"
+        font-family="ui-sans-serif, 'Segoe UI', system-ui, sans-serif"
+        font-size="21.8" font-weight="600" letter-spacing="7.7">2024</text>
+
+  <text fill="#f6f4f1" font-family="Georgia, 'Times New Roman', serif"
+        font-size="64" font-weight="700"><tspan x="72" y="625.6">Pobres Criaturas</tspan></text>
+</svg>
