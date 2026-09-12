@@ -154,8 +154,8 @@ git --version
 ### 1. Clone o repositório
 
 ```bash
-git clone <url-do-repositorio>
-cd cinema-platform
+git clone https://github.com/arthur-risso/cine_reservas.git
+cd cine_reservas
 code .
 ```
 
@@ -455,7 +455,7 @@ O `-v` remove o volume com todos os dados. Depois, refaça `npm run migrate:up`,
 ## Estrutura do projeto
 
 ```
-cinema-platform/
+cine_reservas/
 ├── docker-compose.yml          # PostgreSQL + Adminer
 ├── docker/postgres-init/       # cria o banco de testes na primeira inicialização
 ├── tools/                      # teste de concorrência e gerador de pôsteres
