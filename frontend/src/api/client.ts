@@ -1,6 +1,14 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+/**
+ * Em produção a API é chamada por caminho relativo (`/api/...`), e o Vercel
+ * repassa ao backend via rewrite (ver vercel.json). Assim o navegador vê uma
+ * única origem: o cookie de refresh, que é `SameSite=Strict`, continua sendo
+ * enviado. Com a API em outro domínio `*.vercel.app` ele seria descartado
+ * como cookie de outro site, e o usuário perderia a sessão a cada F5.
+ */
+const BASE_URL =
+    import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:3333' : '');
 
 /**
  * O access token vive em memória, não em localStorage.

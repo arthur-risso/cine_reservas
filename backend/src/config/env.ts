@@ -32,6 +32,13 @@ const envSchema = z.object({
     RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(10),
     /** Máximo de poltronas por reserva — regra de negócio comum em cinemas. */
     MAX_SEATS_PER_RESERVATION: z.coerce.number().int().positive().default(6),
+
+    /**
+     * Segredo que o Vercel Cron envia no header Authorization. Opcional porque
+     * só existe no deploy: localmente os jobs rodam em setInterval. Sem ele
+     * configurado, a rota de cron fica fechada — nunca aberta.
+     */
+    CRON_SECRET: z.string().min(16, 'CRON_SECRET precisa ter ao menos 16 caracteres').optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -49,3 +56,10 @@ export const env = parsed.data;
 
 export const isProduction = env.NODE_ENV === 'production';
 export const isTest = env.NODE_ENV === 'test';
+
+/**
+ * O Vercel define `VERCEL=1` em build e runtime. Lá não existe processo
+ * de longa duração: cada instância pode ser congelada entre requisições,
+ * então pool grande e setInterval deixam de fazer sentido.
+ */
+export const isServerless = Boolean(process.env.VERCEL);

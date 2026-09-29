@@ -36,6 +36,7 @@ por um painel próprio.
 - [Tecnologias](#tecnologias)
 - [Como rodar o projeto](#como-rodar-o-projeto)
 - [Rodando os testes](#rodando-os-testes)
+- [Deploy no Vercel](#deploy-no-vercel)
 - [Solução de problemas](#solução-de-problemas)
 - [Scripts disponíveis](#scripts-disponíveis)
 - [Estrutura do projeto](#estrutura-do-projeto)
@@ -343,6 +344,89 @@ APROVADO: exatamente uma reserva venceu a disputa. Sem overbooking.
 ```
 
 > O script cria uma reserva de verdade. Rode `npm run seed` depois se quiser o mapa limpo.
+
+---
+
+## Deploy no Vercel
+
+São **dois projetos** no Vercel apontando para o mesmo repositório, e um Postgres gerenciado
+(Supabase ou Neon: os dois têm `pgcrypto`, `citext`, `btree_gist` e `unaccent`).
+
+```
+navegador ──► cine-reservas (frontend)  ──/api/*──►  cine-reservas-api (backend)  ──►  Postgres
+              mesma origem para o navegador          rewrite no servidor
+```
+
+O navegador só conversa com o domínio do frontend. O `frontend/vercel.json` repassa `/api/*`
+ao backend. Por isso o cookie de refresh (`SameSite=Strict`) continua funcionando. Com a API
+em outro `*.vercel.app`, o navegador o trataria como cookie de outro site e a sessão cairia a
+cada recarregamento.
+
+### 1. Banco
+
+Crie o banco e aplique o schema **pela conexão direta ou pelo session pooler** (porta 5432).
+O pooler em modo transação (porta 6543 no Supabase) não é adequado para migrations.
+
+```bash
+cd backend
+DATABASE_URL="postgresql://...:5432/postgres" npm run migrate:up
+DATABASE_URL="postgresql://...:5432/postgres" NODE_ENV=production SEED_ADMIN_PASSWORD="<senha forte>" npm run seed
+```
+
+Em produção o seed exige `SEED_ADMIN_PASSWORD`. A senha padrão `Admin@12345` está neste README,
+então com ela qualquer leitor do repositório entraria no painel administrativo. A conta de
+cliente de demonstração continua com a senha pública, porque ela só faz reservas.
+
+**No Supabase, feche a API REST automática.** Ele publica o schema `public` via PostgREST com a
+chave `anon`, que é pública. Sem isso, qualquer um leria `users.password_hash` e gravaria reservas
+sem passar pelas regras da API. O backend conecta como `postgres`, dono das tabelas, e não é
+afetado:
+
+```sql
+-- para cada tabela do schema public:
+ALTER TABLE public.<tabela> ENABLE ROW LEVEL SECURITY;   -- sem policies = ninguém da API REST entra
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;
+```
+
+O banco da demo fica em `sa-east-1` (São Paulo), e a função do backend roda em `gru1` (também
+São Paulo, em `backend/vercel.json`). Cada requisição faz várias queries: com a função na
+região padrão dos EUA, cada uma pagaria ~120 ms de ida e volta.
+
+### 2. Projeto do backend
+
+- **Root Directory:** `backend`. O Vercel detecta o Express e usa o `backend/index.ts`.
+- **Nome:** `cine-reservas-api`. Se usar outro, ajuste a URL em `frontend/vercel.json`.
+- **Variáveis de ambiente:**
+
+| Variável | Valor |
+|---|---|
+| `DATABASE_URL` | URL do **transaction pooler** (Supabase: porta 6543), para aguentar muitas instâncias |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Novos, gerados como no `.env.example`. Não reutilize os locais |
+| `NODE_ENV` | `production` (ativa SSL no banco, cookie `Secure` e HSTS) |
+| `CORS_ORIGIN` | URL do frontend, ex.: `https://cine-reservas.vercel.app` |
+| `CRON_SECRET` | Qualquer string aleatória com 16+ caracteres |
+
+No Vercel não há processo contínuo para rodar `setInterval`. A limpeza de reservas vencidas vira
+um **Vercel Cron** (`backend/vercel.json`) que chama `GET /api/cron/limpeza` uma vez por dia,
+o limite do plano Hobby. Isso basta porque o job é só arrumação: toda leitura de disponibilidade
+já ignora pendentes vencidas comparando `expires_at` com `now()`.
+
+### 3. Projeto do frontend
+
+- **Root Directory:** `frontend` (preset Vite detectado automaticamente).
+- **Nenhuma variável de ambiente é necessária.** Em produção o cliente usa caminhos relativos
+  (`/api/...`).
+
+O segundo rewrite do `frontend/vercel.json` manda qualquer rota para `index.html`. Sem ele,
+um F5 em `/filmes/...` daria 404, porque quem conhece as rotas é o React Router, não o servidor.
+
+> **Limitação conhecida:** o rate limit é em memória. No Vercel cada instância conta separado,
+> então o limite efetivo fica mais frouxo. O próximo passo seria um store compartilhado (Upstash Redis).
 
 ---
 

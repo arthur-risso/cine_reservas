@@ -7,6 +7,7 @@ import { env, isProduction } from './config/env';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { createRateLimiter } from './middlewares/rateLimit';
 import { docsRoutes } from './docs/docs.routes';
+import { cronRoutes } from './jobs/cron.routes';
 import { authRoutes } from './modules/auth/auth.routes';
 import { movieRoutes } from './modules/movies/movies.routes';
 import { roomRoutes } from './modules/rooms/rooms.routes';
@@ -94,6 +95,7 @@ export function createApp(): Application {
     app.use('/api/rooms', roomRoutes);
     app.use('/api/showtimes', showtimeRoutes);
     app.use('/api/reservations', reservationRoutes);
+    app.use('/api/cron', cronRoutes);
 
     app.use(notFoundHandler);
     // Sempre por último: o Express só chega aqui quando algo dá next(erro).

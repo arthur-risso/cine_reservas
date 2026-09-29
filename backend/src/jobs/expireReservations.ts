@@ -16,35 +16,45 @@ const TOKEN_CLEANUP_INTERVAL_MS = 60 * 60_000;
  * e `released = true` nas linhas antigas, o que mantém o índice único parcial
  * pequeno e rápido.
  *
- * Em uma implantação com várias instâncias, isso migraria para um worker
- * único (ou um advisory lock), para não ter N processos varrendo a mesma
- * tabela ao mesmo tempo.
+ * Existem dois disparadores para as mesmas funções: `setInterval` quando a
+ * API roda como processo contínuo (local, Render, VPS) e o Vercel Cron no
+ * deploy serverless (ver cron.routes.ts), onde não há processo vivo entre
+ * requisições para manter um timer.
+ */
+export async function runReservationExpiration(): Promise<number> {
+    const count = await expirePendingReservations();
+    if (count > 0) {
+        console.log(`[job] ${count} reserva(s) expirada(s) e poltronas liberadas`);
+    }
+    return count;
+}
+
+export async function runTokenCleanup(): Promise<number> {
+    const count = await deleteExpiredRefreshTokens();
+    if (count > 0) {
+        console.log(`[job] ${count} refresh token(s) expirado(s) removido(s)`);
+    }
+    return count;
+}
+
+/**
+ * Em uma implantação com várias instâncias contínuas, isso migraria para um
+ * worker único (ou um advisory lock), para não ter N processos varrendo a
+ * mesma tabela ao mesmo tempo.
  */
 export function startBackgroundJobs(): () => void {
     const expirationTimer = setInterval(() => {
-        expirePendingReservations()
-            .then((count) => {
-                if (count > 0) {
-                    console.log(`[job] ${count} reserva(s) expirada(s) e poltronas liberadas`);
-                }
-            })
-            .catch((error) => {
-                // Nunca deixar a exceção escapar de um setInterval: uma
-                // rejeição não tratada derruba o processo inteiro.
-                console.error('[job] falha ao expirar reservas:', error);
-            });
+        runReservationExpiration().catch((error) => {
+            // Nunca deixar a exceção escapar de um setInterval: uma
+            // rejeição não tratada derruba o processo inteiro.
+            console.error('[job] falha ao expirar reservas:', error);
+        });
     }, EXPIRATION_INTERVAL_MS);
 
     const tokenTimer = setInterval(() => {
-        deleteExpiredRefreshTokens()
-            .then((count) => {
-                if (count > 0) {
-                    console.log(`[job] ${count} refresh token(s) expirado(s) removido(s)`);
-                }
-            })
-            .catch((error) => {
-                console.error('[job] falha ao limpar refresh tokens:', error);
-            });
+        runTokenCleanup().catch((error) => {
+            console.error('[job] falha ao limpar refresh tokens:', error);
+        });
     }, TOKEN_CLEANUP_INTERVAL_MS);
 
     // unref: estes timers não seguram o processo vivo no encerramento.

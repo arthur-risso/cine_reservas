@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { pool, withTransaction } from './index';
+import { isProduction } from '../config/env';
 import { hashPassword } from '../utils/password';
 import { generateSeatLayout } from '../modules/rooms/seatLayout';
 
@@ -223,7 +224,28 @@ function roundUpToFiveMinutes(date: Date): Date {
     return result;
 }
 
+/**
+ * A senha do admin de demonstração está no README, que é público. Em
+ * produção isso daria o painel administrativo a qualquer leitor do
+ * repositório, então lá ela precisa vir de fora — e o seed se recusa a rodar
+ * sem ela, em vez de cair silenciosamente no valor conhecido.
+ */
+function resolveAdminPassword(): string {
+    const fromEnv = process.env.SEED_ADMIN_PASSWORD;
+
+    if (isProduction && (!fromEnv || fromEnv.length < 16)) {
+        throw new Error(
+            'Em produção, defina SEED_ADMIN_PASSWORD (16+ caracteres). A senha padrão do admin é pública no README.',
+        );
+    }
+
+    return fromEnv ?? 'Admin@12345';
+}
+
 async function seed(): Promise<void> {
+    // Valida antes do TRUNCATE: falhar depois deixaria o banco vazio.
+    const adminPassword = resolveAdminPassword();
+
     console.log('Limpando dados existentes...');
 
     await withTransaction(async (client) => {
@@ -236,7 +258,7 @@ async function seed(): Promise<void> {
     console.log('Criando usuários...');
 
     const [adminHash, clientHash] = await Promise.all([
-        hashPassword('Admin@12345'),
+        hashPassword(adminPassword),
         hashPassword('Cliente@12345'),
     ]);
 
@@ -409,7 +431,9 @@ async function seed(): Promise<void> {
     console.log(`  ${ROOMS.length} salas / ${counts[0]!.seats} poltronas`);
     console.log(`  ${showtimeCount} sessões nos próximos 14 dias`);
     console.log('');
-    console.log('  Admin ....... admin@cinema.dev   / Admin@12345');
+    console.log(
+        `  Admin ....... admin@cinema.dev   / ${process.env.SEED_ADMIN_PASSWORD ? '(SEED_ADMIN_PASSWORD)' : adminPassword}`,
+    );
     console.log('  Cliente ..... cliente@cinema.dev / Cliente@12345');
     console.log('');
 }

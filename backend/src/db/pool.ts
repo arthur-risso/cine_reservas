@@ -1,5 +1,6 @@
 import { Pool, types } from 'pg';
-import { env, isProduction } from '../config/env';
+import { attachDatabasePool } from '@vercel/functions';
+import { env, isProduction, isServerless } from '../config/env';
 
 /**
  * Por padrão o node-pg devolve `numeric` como string, para não perder
@@ -21,7 +22,12 @@ export const pool = new Pool({
     connectionString: env.DATABASE_URL,
     // Acima disso o Postgres passa a sofrer com troca de contexto. 10 é
     // folgado para uma API deste porte; ajuste junto com max_connections.
-    max: 10,
+    //
+    // No Vercel cada instância tem o próprio pool e podem existir dezenas de
+    // instâncias ao mesmo tempo: 10 por instância esgotaria o banco em um
+    // pico. Lá o limite fica baixo e quem multiplexa é o pooler do provedor
+    // (Supabase/Neon), que deve estar na DATABASE_URL.
+    max: isServerless ? 3 : 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
     ssl: isProduction ? { rejectUnauthorized: false } : undefined,
@@ -32,6 +38,11 @@ export const pool = new Pool({
 pool.on('error', (err) => {
     console.error('[db] erro em conexão ociosa do pool:', err.message);
 });
+
+// Com Fluid Compute a instância é suspensa entre requisições. Sem isso, as
+// conexões ociosas ficam abertas do lado do banco até estourar o timeout,
+// ocupando vagas do pooler. Fora do Vercel a chamada não faz nada.
+attachDatabasePool(pool);
 
 export async function checkDatabaseConnection(): Promise<void> {
     const client = await pool.connect();
